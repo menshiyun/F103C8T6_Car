@@ -1,0 +1,53 @@
+
+# MDK-ARM
+*.__i
+*._ia
+*.axf
+*.bak
+*.bin
+*.crf
+*.d
+*.dep
+*.hex
+*.htm
+*.html
+*.iex
+*.lnp
+*.log
+*.lst
+*.map
+*.o
+*.sct
+*.scvd
+*.tmp
+*.uvguix.*
+JLinkLog.txt
+
+# EWARM
+*.crun
+*.cspy
+*.cspy.*
+*.dbgdt
+*.dni
+*.ewt
+*.jlink
+*.out
+*.pbi
+*.pbi.*
+*.pbd
+*.pbd.*
+*.sim
+*.wsdt
+*.wspos
+*.xcl
+
+# SW4STM32
+*.mk
+*.elf
+*.list
+makefile
+
+# Other Document
+*.docx
+*.vsd
+*.json
