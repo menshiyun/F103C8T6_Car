@@ -147,7 +147,7 @@ void StartDefaultTask(void const * argument)
 	/* Infinite loop */
 	for (;;) {
 		HAL_IWDG_Refresh(&hiwdg);
-		if (!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) && !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1))
+		if (!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8) && !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1))
 		{
 			CarController->Stop();
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
