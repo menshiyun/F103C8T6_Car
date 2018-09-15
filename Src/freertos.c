@@ -142,11 +142,16 @@ void StartDefaultTask(void const * argument)
 	HAL_UART_Receive_DMA(&huart3, Rx3, RX_SIZE);
 	__HAL_UART_CLEAR_IDLEFLAG(&huart3);
 	__HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);
+
+	const struct _CarControl *CarController = GetCarController();
 	/* Infinite loop */
 	for (;;) {
 		HAL_IWDG_Refresh(&hiwdg);
 		if (!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) && !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1))
+		{
+			CarController->Stop();
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+		}
 		else
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 		osDelay(250);
