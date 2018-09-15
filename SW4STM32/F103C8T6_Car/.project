@@ -26,9 +26,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Middlewares/Custom</name>
+			<name>CarTools</name>
 			<type>2</type>
-			<locationURI>$%7BPARENT-2-PROJECT_LOC%7D/Middlewares/Custom</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/CarTools</locationURI>
 		</link>
 		<link>
 			<name>Application/SW4STM32/startup_stm32f103xb.s</name>
