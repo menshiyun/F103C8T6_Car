@@ -14,10 +14,12 @@ struct _Wheel {
 
 const struct _Wheel *GetWheel(uint8_t);
 
+typedef void (*WheelFunc)(const struct _Wheel *);
+
 struct _WheelRoll {
-	void (*Forward)(const struct _Wheel *);
-	void (*Backward)(const struct _Wheel *);
-	void (*Stop)(const struct _Wheel *);
+	WheelFunc Forward;
+	WheelFunc Backward;
+	WheelFunc Stop;
 };
 
 const struct _WheelRoll *GetWheelRoller(void);
