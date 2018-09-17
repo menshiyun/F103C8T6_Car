@@ -52,6 +52,7 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN Includes */     
+#include <string.h>
 #include "iwdg.h"
 #include "usart.h"
 #include "CarControl.h"
@@ -60,13 +61,17 @@
 /* Variables -----------------------------------------------------------------*/
 osThreadId defaultTaskHandle;
 osThreadId controlTaskHandle;
-osMessageQId MessageQueueHandle;
 
 /* USER CODE BEGIN Variables */
-static osPoolId MessagePool;
 #define RX_SIZE 32
 static uint8_t Rx1[RX_SIZE];
 static uint8_t Rx3[RX_SIZE];
+
+static osMailQId MailBoxId;
+struct _Mail {
+	uint8_t  buf[RX_SIZE];
+	uint32_t size;
+};
 /* USER CODE END Variables */
 
 /* Function prototypes -------------------------------------------------------*/
@@ -76,10 +81,6 @@ void StartControlTask(void const * argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* USER CODE BEGIN FunctionPrototypes */
-struct _Message {
-	uint8_t  *p;
-	uint16_t  size;
-};
 static void ExecCarCmd(uint8_t *, uint16_t);
 /* USER CODE END FunctionPrototypes */
 
@@ -117,11 +118,6 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
-  /* Create the queue(s) */
-  /* definition and creation of MessageQueue */
-  osMessageQDef(MessageQueue, 16, uint32_t);
-  MessageQueueHandle = osMessageCreate(osMessageQ(MessageQueue), NULL);
-
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
@@ -132,8 +128,8 @@ void StartDefaultTask(void const * argument)
 {
 
   /* USER CODE BEGIN StartDefaultTask */
-	osPoolDef(Message, 16, struct _Message);
-	MessagePool = osPoolCreate(osPool(Message));
+	osMailQDef(MailBox, 8, struct _Mail);
+	MailBoxId = osMailCreate(osMailQ(MailBox), NULL);
 
 	HAL_UART_Receive_DMA(&huart1, Rx1, sizeof(Rx1));
 	__HAL_UART_CLEAR_IDLEFLAG(&huart1);
@@ -164,14 +160,14 @@ void StartControlTask(void const * argument)
 {
   /* USER CODE BEGIN StartControlTask */
 	osEvent event;
-	struct _Message *Message = NULL;
+	struct _Mail *Mail = NULL;
 	/* Infinite loop */
 	for (;;) {
-		event = osMessageGet(MessageQueueHandle, osWaitForever);
-		if (event.status == osEventMessage) {
-			Message = event.value.p;
-			ExecCarCmd(Message->p, Message->size);
-			osPoolFree(MessagePool, Message);
+		event = osMailGet(MailBoxId, osWaitForever);
+		if (event.status == osEventMail) {
+			Mail = event.value.p;
+			ExecCarCmd(Mail->buf, Mail->size);
+			osMailFree(MailBoxId, Mail);
 		}
 	}
   /* USER CODE END StartControlTask */
@@ -217,7 +213,7 @@ static void ExecCarCmd(uint8_t *p, uint16_t size)
 
 void UART_IDLE_Handler(UART_HandleTypeDef *huart)
 {
-	struct _Message *Message = NULL;
+	struct _Mail *Mail = NULL;
 
 	if(__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))
 	{
@@ -225,12 +221,12 @@ void UART_IDLE_Handler(UART_HandleTypeDef *huart)
 		__HAL_UART_DISABLE_IT(huart, UART_IT_IDLE);
 		HAL_UART_DMAStop(huart);
 
-		Message = osPoolCAlloc(MessagePool);
-		if(Message != NULL)
+		Mail = osMailCAlloc(MailBoxId, osWaitForever);
+		if(Mail != NULL)
 		{
-			Message->p    = huart->pRxBuffPtr;
-			Message->size = huart->RxXferSize - __HAL_DMA_GET_COUNTER(huart->hdmarx);
-			osMessagePut(MessageQueueHandle, (uint32_t)Message, osWaitForever);
+			Mail->size = huart->RxXferSize - __HAL_DMA_GET_COUNTER(huart->hdmarx);
+			memcpy(Mail->buf, huart->pRxBuffPtr, Mail->size);
+			osMailPut(MailBoxId, Mail);
 		}
 
 		HAL_UART_Receive_DMA(huart, huart->pRxBuffPtr, huart->RxXferSize);
