@@ -76,7 +76,7 @@ void StartControlTask(void const * argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* USER CODE BEGIN FunctionPrototypes */
-struct MessageStr {
+struct _Message {
 	uint8_t  *p;
 	uint16_t  size;
 };
@@ -132,14 +132,14 @@ void StartDefaultTask(void const * argument)
 {
 
   /* USER CODE BEGIN StartDefaultTask */
-	osPoolDef(Message, 16, sizeof(struct MessageStr));
+	osPoolDef(Message, 16, struct _Message);
 	MessagePool = osPoolCreate(osPool(Message));
 
-	HAL_UART_Receive_DMA(&huart1, Rx1, RX_SIZE);
+	HAL_UART_Receive_DMA(&huart1, Rx1, sizeof(Rx1));
 	__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
 
-	HAL_UART_Receive_DMA(&huart3, Rx3, RX_SIZE);
+	HAL_UART_Receive_DMA(&huart3, Rx3, sizeof(Rx3));
 	__HAL_UART_CLEAR_IDLEFLAG(&huart3);
 	__HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);
 
@@ -164,7 +164,7 @@ void StartControlTask(void const * argument)
 {
   /* USER CODE BEGIN StartControlTask */
 	osEvent event;
-	struct MessageStr *Message = NULL;
+	struct _Message *Message = NULL;
 	/* Infinite loop */
 	for (;;) {
 		event = osMessageGet(MessageQueueHandle, osWaitForever);
@@ -217,7 +217,7 @@ static void ExecCarCmd(uint8_t *p, uint16_t size)
 
 void UART_IDLE_Handler(UART_HandleTypeDef *huart)
 {
-	struct MessageStr *Message = NULL;
+	struct _Message *Message = NULL;
 
 	if(__HAL_UART_GET_FLAG(huart, UART_FLAG_IDLE))
 	{
