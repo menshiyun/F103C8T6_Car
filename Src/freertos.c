@@ -128,17 +128,6 @@ void StartDefaultTask(void const * argument)
 {
 
   /* USER CODE BEGIN StartDefaultTask */
-	osMailQDef(MailBox, 8, struct _Mail);
-	MailBoxId = osMailCreate(osMailQ(MailBox), NULL);
-
-	HAL_UART_Receive_DMA(&huart1, Rx1, sizeof(Rx1));
-	__HAL_UART_CLEAR_IDLEFLAG(&huart1);
-	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
-
-	HAL_UART_Receive_DMA(&huart3, Rx3, sizeof(Rx3));
-	__HAL_UART_CLEAR_IDLEFLAG(&huart3);
-	__HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);
-
 	const struct _CarControl *CarController = GetCarController();
 	/* Infinite loop */
 	for (;;) {
@@ -161,6 +150,17 @@ void StartControlTask(void const * argument)
   /* USER CODE BEGIN StartControlTask */
 	osEvent event;
 	struct _Mail *Mail = NULL;
+
+	osMailQDef(MailBox, 8, struct _Mail);
+	MailBoxId = osMailCreate(osMailQ(MailBox), NULL);
+
+	HAL_UART_Receive_DMA(&huart1, Rx1, sizeof(Rx1));
+	__HAL_UART_CLEAR_IDLEFLAG(&huart1);
+	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
+
+	HAL_UART_Receive_DMA(&huart3, Rx3, sizeof(Rx3));
+	__HAL_UART_CLEAR_IDLEFLAG(&huart3);
+	__HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE);
 	/* Infinite loop */
 	for (;;) {
 		event = osMailGet(MailBoxId, osWaitForever);
